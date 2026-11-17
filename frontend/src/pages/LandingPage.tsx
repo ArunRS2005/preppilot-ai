@@ -4,6 +4,7 @@ import { GitBranch, Map, Star, ArrowRight, Code2, Database, Cpu, Network, Heart,
          Zap, Brain, Target, TrendingUp, Shield, ChevronRight, CheckCircle, Layers, MessageSquare, Award, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { LogoIcon } from '@/components/ui/Logo'
 import {
   FadeInView, StaggeredList, StaggerItem, Typewriter, AnimatedCounter,
 } from '@/components/ui/motion'
@@ -42,8 +43,8 @@ export function LandingPage() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex items-center gap-2.5 mb-6">
-                <Badge variant="purple" className="gap-1.5 py-1 px-3">
-                  <Zap className="h-3 w-3" aria-hidden="true" />
+                <Badge variant="purple" className="gap-2 py-1 px-3">
+                  <LogoIcon size="xs" glow={false} hover={false} />
                   AI Interview Intelligence System
                 </Badge>
                 <span className="flex items-center gap-1 text-xs text-success-400">
@@ -201,6 +202,9 @@ export function LandingPage() {
               <div className="absolute inset-0 mesh-gradient" aria-hidden="true" />
               <div className="absolute inset-0 grid-overlay opacity-30" aria-hidden="true" />
               <div className="relative z-10">
+                <div className="flex justify-center mb-5">
+                  <LogoIcon size="lg" glow hover={false} />
+                </div>
                 <Badge variant="purple" className="mb-5 gap-1.5">
                   <Star className="h-3 w-3" />
                   Build your evidence portfolio today
@@ -246,7 +250,10 @@ function HeroDashboardPreview() {
             <div className="h-2.5 w-2.5 rounded-full bg-warning-500/70" />
             <div className="h-2.5 w-2.5 rounded-full bg-success-500/70" />
           </div>
-          <span className="text-xs text-slate-500 mx-auto">PrepPilot AI — Dashboard</span>
+          <div className="flex items-center gap-1.5 mx-auto">
+            <img src="/logo-icon.svg" alt="" aria-hidden="true" width={16} height={16} className="object-contain" />
+            <span className="text-xs text-slate-500">PrepPilot AI — Dashboard</span>
+          </div>
         </div>
 
         <div className="p-5 space-y-4">

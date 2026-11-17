@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
-  Zap, LayoutDashboard, History, Settings, Menu, X,
+  LayoutDashboard, History, Settings, Menu, X,
   ChevronRight, BookOpen, GitBranch, Map, Fingerprint, FlaskConical,
   Mic, FileText,
 } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import { LogoLink } from '@/components/ui/Logo'
 
 const navLinks = [
   { to: '/dashboard',  label: 'Dashboard', icon: LayoutDashboard },
@@ -51,23 +52,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-xl p-1 -m-1"
-            aria-label="PrepPilot AI home"
-          >
-            <motion.div
-              whileHover={reduced ? undefined : { scale: 1.05, rotate: 5 }}
-              transition={{ duration: 0.2 }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-700 shadow-glow-sm"
-            >
-              <Zap className="h-4 w-4 text-white" aria-hidden="true" />
-            </motion.div>
-            <span className="text-sm font-bold tracking-tight">
-              <span className="text-white">PrepPilot</span>
-              <span className="text-gradient"> AI</span>
-            </span>
-          </Link>
+          <LogoLink size="sm" />
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main navigation">

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { LogoIcon } from '@/components/ui/Logo'
 import {
   AnimatedCounter, StaggeredList, StaggerItem, StatusPulse,
 } from '@/components/ui/motion'
@@ -360,9 +361,9 @@ function EmptyDashboard({ name }: { name: string }) {
         <motion.div
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 mx-auto mb-8"
+          className="mx-auto mb-8"
         >
-          <Award className="h-12 w-12 text-violet-400" aria-hidden="true" />
+          <LogoIcon size="xl" glow hover={false} />
         </motion.div>
         <h1 className="text-3xl font-bold text-white mb-3">
           Welcome, <span className="text-gradient">{name}</span>

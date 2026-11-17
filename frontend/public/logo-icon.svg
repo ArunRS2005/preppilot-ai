@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a0a3c"/>
+      <stop offset="100%" stop-color="#0d0828"/>
+    </linearGradient>
+
+    <!-- P letter gradient -->
+    <linearGradient id="pGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+
+    <!-- P glow filter -->
+    <filter id="pGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Purple glow -->
+    <filter id="purpleGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur"/>
+      <feFlood flood-color="#a855f7" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+    </filter>
+
+    <!-- Orbital glow -->
+    <filter id="orbitGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Star glow -->
+    <filter id="starGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Background radial glow -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2d1060" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0d0828" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Cap gradient -->
+    <linearGradient id="capGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e9d5ff"/>
+      <stop offset="100%" stop-color="#c4b5fd"/>
+    </linearGradient>
+
+    <!-- Cyan orbital gradient -->
+    <linearGradient id="orbitGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="orbitGrad2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="96" fill="url(#bgGlow)"/>
+
+  <!-- Inner subtle glow overlay -->
+  <ellipse cx="256" cy="240" rx="180" ry="160" fill="#4c1d95" fill-opacity="0.18"/>
+
+  <!-- ═══ ORBITAL RINGS ═══ -->
+  <!-- Large orbit arc 1 (tilted ellipse, cyan) -->
+  <g filter="url(#orbitGlow)">
+    <ellipse cx="256" cy="264" rx="168" ry="68"
+             fill="none" stroke="url(#orbitGrad1)" stroke-width="3.5"
+             stroke-dasharray="310 250"
+             transform="rotate(-22 256 264)"/>
+  </g>
+
+  <!-- Large orbit arc 2 (opposite tilt, purple-cyan) -->
+  <g filter="url(#orbitGlow)">
+    <ellipse cx="256" cy="264" rx="168" ry="68"
+             fill="none" stroke="url(#orbitGrad2)" stroke-width="2.5"
+             stroke-dasharray="200 360"
+             stroke-dashoffset="80"
+             transform="rotate(22 256 264)"/>
+  </g>
+
+  <!-- Small orbit dots (nodes on the ring) -->
+  <circle cx="104" cy="244" r="5" fill="#06b6d4" opacity="0.9" filter="url(#orbitGlow)"/>
+  <circle cx="408" cy="284" r="4" fill="#06b6d4" opacity="0.7" filter="url(#orbitGlow)"/>
+  <circle cx="380" cy="168" r="3.5" fill="#a855f7" opacity="0.8" filter="url(#starGlow)"/>
+  <circle cx="130" cy="356" r="3" fill="#3b82f6" opacity="0.7"/>
+
+  <!-- ═══ STYLIZED "P" LETTER ═══ -->
+  <!-- P glow layer (blurred duplicate) -->
+  <text x="134" y="390"
+        font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="900" font-size="310"
+        fill="url(#pGrad)"
+        filter="url(#purpleGlow)"
+        opacity="0.5">P</text>
+
+  <!-- P main letter -->
+  <text x="134" y="390"
+        font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="900" font-size="310"
+        fill="url(#pGrad)">P</text>
+
+  <!-- ═══ GRADUATION CAP ═══ -->
+  <!-- Cap board (diamond/square rotated 45°) -->
+  <g filter="url(#orbitGlow)">
+    <!-- Mortarboard base plate -->
+    <rect x="176" y="62" width="160" height="14" rx="4" fill="url(#capGrad)" opacity="0.95"/>
+    <!-- Cap top (diamond) -->
+    <polygon points="256,20 320,62 256,80 192,62" fill="url(#capGrad)" opacity="0.95"/>
+    <!-- Cap band / crown -->
+    <rect x="210" y="80" width="92" height="38" rx="6" fill="#c4b5fd" opacity="0.9"/>
+    <!-- Tassel string -->
+    <line x1="320" y1="62" x2="348" y2="102" stroke="#e9d5ff" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="348" cy="110" r="8" fill="#e9d5ff" opacity="0.85"/>
+    <!-- Tassel end -->
+    <line x1="348" y1="118" x2="342" y2="136" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <line x1="348" y1="118" x2="348" y2="138" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <line x1="348" y1="118" x2="354" y2="136" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- ═══ 4-POINTED STAR SPARKLE (inside P counter) ═══ -->
+  <g filter="url(#starGlow)">
+    <!-- Star at ~(315, 240) which sits inside the enclosed bowl of the P -->
+    <path d="M315,210 L322,236 L348,243 L322,250 L315,276 L308,250 L282,243 L308,236 Z"
+          fill="white" opacity="0.95"/>
+    <!-- Inner bright core -->
+    <path d="M315,224 L318,236 L330,239 L318,242 L315,254 L312,242 L300,239 L312,236 Z"
+          fill="white"/>
+  </g>
+
+  <!-- Small accent sparkles -->
+  <g opacity="0.7" filter="url(#starGlow)">
+    <!-- Top-right sparkle -->
+    <path d="M408,130 L411,138 L419,141 L411,144 L408,152 L405,144 L397,141 L405,138 Z"
+          fill="white" opacity="0.6"/>
+    <!-- Bottom-left sparkle -->
+    <path d="M110,370 L112,376 L118,378 L112,380 L110,386 L108,380 L102,378 L108,376 Z"
+          fill="#c4b5fd" opacity="0.5"/>
+  </g>
+
+  <!-- ═══ EDGE SUBTLE GLOW ═══ -->
+  <!-- Top-left corner light -->
+  <circle cx="96" cy="96" r="60" fill="#7c3aed" opacity="0.08"/>
+  <!-- Bottom-right corner light -->
+  <circle cx="420" cy="420" r="80" fill="#1d4ed8" opacity="0.06"/>
+</svg>

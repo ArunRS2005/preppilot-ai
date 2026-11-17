@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # Gemini
     gemini_api_key: Optional[str] = None
-    gemini_model: str = "gemini-4-hydrogen"
+    gemini_model: str = "gemini-2.5-flash"
 
     # Supabase
     supabase_url: Optional[str] = None

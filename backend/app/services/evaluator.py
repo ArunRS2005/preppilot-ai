@@ -1,15 +1,14 @@
 """
 Gemini-based answer evaluation service.
 
-Uses the canonical `google-genai` SDK (v3+) with the Interactions API.
-Auth keys (AQ. prefix, bound to a service account) are fully supported —
-the SDK reads GEMINI_API_KEY from the environment automatically.
+Uses the canonical google-genai SDK v3+ with generate_content (stable REST).
+The Interactions API was replaced here with generate_content because
+the Interactions API uses HTTP/2 streaming which is blocked in some
+network environments (Render free tier, local networks, etc.).
 
-Error handling:
-- Invalid / missing API key        → clear log message, mock fallback
-- Rate limits / quota exhaustion   → retry with backoff, then mock fallback
-- Model output validation failure  → log details, mock fallback
-- All fallbacks are marked is_mock=True — never a silent zero
+generate_content uses a standard HTTPS POST — universally compatible.
+
+Auth keys (AQ. prefix) and standard keys (AIza prefix) both work.
 """
 
 from __future__ import annotations
@@ -50,9 +49,6 @@ def _get_client():
 
     try:
         from google import genai  # type: ignore[import]
-
-        # Client auto-reads GEMINI_API_KEY from environment.
-        # Explicitly passing it also works for both standard and auth key formats.
         _client = genai.Client(api_key=settings.gemini_api_key)
         logger.info("google-genai client initialised (model=%s)", settings.gemini_model)
         return _client
@@ -61,7 +57,36 @@ def _get_client():
         return None
 
 
-# ─── Evaluation prompt ────────────────────────────────────────────────────────
+# ─── Personality instructions ─────────────────────────────────────────────────
+
+PERSONALITY_INSTRUCTIONS: dict[str, str] = {
+    "friendly_mentor": (
+        "You are a supportive and encouraging interviewer. "
+        "Acknowledge effort before pointing out gaps. "
+        "Frame improvements as learning opportunities."
+    ),
+    "strict_technical": (
+        "You are a strict technical interviewer who expects precise, accurate answers. "
+        "Be direct. Do not soften critical feedback. "
+        "Specifically call out any technical inaccuracies."
+    ),
+    "senior_engineer": (
+        "You are an experienced senior engineer who cares about trade-offs, "
+        "real-world applicability, and depth. "
+        "Reflect that in your evaluation."
+    ),
+    "stress_interviewer": (
+        "You are a challenging but professional interviewer. "
+        "Be demanding. Call out weak assumptions directly. "
+        "Score conservatively on incompleteness."
+    ),
+    "engineering_manager": (
+        "You are an engineering manager who values ownership, clear communication, "
+        "and structured thinking. Reward clear reasoning."
+    ),
+}
+
+# ─── Prompt ───────────────────────────────────────────────────────────────────
 
 SYSTEM_INSTRUCTION = """You are a technical interview evaluator assessing a candidate's answer.
 Evaluate based on meaning, correctness, and completeness — NOT keyword matching.
@@ -89,42 +114,12 @@ Scoring guide:
 0-39    Poor — largely incorrect or insufficient
 
 Rules:
-- overall_score reflects overall quality, not a simple average of other scores
+- overall_score reflects overall quality, not a simple average
 - strengths: 1-3 specific things done well (empty list if nothing noteworthy)
-- improvements: 1-3 specific, actionable suggestions (always at least one)
-- demonstrated_concepts: specific technical concepts correctly addressed
-- missing_concepts: specific concepts relevant to the question that were not covered
+- improvements: 1-3 specific actionable suggestions (always at least one)
+- demonstrated_concepts: specific concepts correctly addressed
+- missing_concepts: specific concepts not covered
 - All scores must be integers 0-100"""
-
-
-PERSONALITY_INSTRUCTIONS: dict[str, str] = {
-    "friendly_mentor": (
-        "You are a supportive and encouraging interviewer. "
-        "Acknowledge effort in the answer before pointing out gaps. "
-        "Frame improvements as learning opportunities."
-    ),
-    "strict_technical": (
-        "You are a strict technical interviewer who expects precise, accurate answers. "
-        "Be direct. Do not soften critical feedback. "
-        "Specifically call out any technical inaccuracies."
-    ),
-    "senior_engineer": (
-        "You are an experienced senior engineer who cares about trade-offs, real-world applicability, "
-        "and depth of understanding. Ask yourself: would this answer hold up in a code review or design discussion? "
-        "Reflect that in your evaluation."
-    ),
-    "stress_interviewer": (
-        "You are a challenging but professional interviewer. "
-        "Be demanding. Call out weak assumptions directly. "
-        "Do NOT be insulting or disrespectful — stay professional. "
-        "Score conservatively on incompleteness."
-    ),
-    "engineering_manager": (
-        "You are an engineering manager who values ownership, clear communication, and structured thinking "
-        "over raw technical detail. Reward clear reasoning and penalize vague hand-waving. "
-        "Focus on how the candidate explains their thought process."
-    ),
-}
 
 
 def _build_prompt(
@@ -134,9 +129,12 @@ def _build_prompt(
     difficulty: str,
     personality: str = "friendly_mentor",
 ) -> str:
-    persona_note = PERSONALITY_INSTRUCTIONS.get(personality, PERSONALITY_INSTRUCTIONS["friendly_mentor"])
+    persona = PERSONALITY_INSTRUCTIONS.get(
+        personality, PERSONALITY_INSTRUCTIONS["friendly_mentor"]
+    )
     return (
-        f"Evaluator context: {persona_note}\n\n"
+        f"{SYSTEM_INSTRUCTION}\n\n"
+        f"Evaluator context: {persona}\n\n"
         f"Topic: {topic.upper()}\n"
         f"Difficulty: {difficulty}\n"
         f"Question: {question_text}\n\n"
@@ -164,7 +162,10 @@ def _is_transient(exc: Exception) -> bool:
     reraise=True,
 )
 async def _call_gemini(prompt: str) -> str:
-    """Call Gemini via the Interactions API. Runs sync SDK call in a thread pool."""
+    """
+    Call Gemini using generate_content (stable HTTPS POST).
+    Runs the synchronous SDK call in a thread pool executor.
+    """
     import asyncio
 
     client = _get_client()
@@ -174,11 +175,12 @@ async def _call_gemini(prompt: str) -> str:
     settings = get_settings()
 
     def _sync_call() -> str:
-        response = client.interactions.create(
+        # Use generate_content — universally supported, standard HTTP POST
+        response = client.models.generate_content(
             model=settings.gemini_model,
-            input=f"{SYSTEM_INSTRUCTION}\n\n{prompt}",
+            contents=prompt,
         )
-        return response.output_text or ""
+        return response.text or ""
 
     try:
         loop = asyncio.get_event_loop()
@@ -224,10 +226,10 @@ def _validate(raw: Dict[str, Any]) -> Dict[str, Any]:
         return [str(x) for x in val[:5]]
 
     return {
-        "technical_score":    int_score(raw["technical_score"],    "technical_score"),
-        "completeness_score": int_score(raw["completeness_score"], "completeness_score"),
-        "clarity_score":      int_score(raw["clarity_score"],      "clarity_score"),
-        "overall_score":      int_score(raw["overall_score"],      "overall_score"),
+        "technical_score":       int_score(raw["technical_score"],    "technical_score"),
+        "completeness_score":    int_score(raw["completeness_score"], "completeness_score"),
+        "clarity_score":         int_score(raw["clarity_score"],      "clarity_score"),
+        "overall_score":         int_score(raw["overall_score"],      "overall_score"),
         "strengths":             str_list(raw["strengths"],             "strengths"),
         "improvements":          str_list(raw["improvements"],          "improvements"),
         "demonstrated_concepts": str_list(raw["demonstrated_concepts"], "demonstrated_concepts"),
@@ -236,7 +238,6 @@ def _validate(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _parse(text: str) -> Dict[str, Any]:
-    # Strip markdown fences the model might add despite instructions
     clean = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
     try:
         raw = json.loads(clean)
@@ -258,12 +259,15 @@ async def evaluate_answer(
 ) -> EvaluationResult:
     """
     Evaluate a candidate's answer.
-    Attempts Gemini first; falls back to mock only if Gemini is genuinely unavailable.
-    Never returns a silent zero — all errors are logged explicitly.
+    Uses generate_content (standard HTTP POST — works everywhere).
+    Falls back to mock only if Gemini is genuinely unavailable.
+    Never returns a silent zero.
     """
     client = _get_client()
     if client is not None:
-        prompt = _build_prompt(question_text, answer_text, topic.value, difficulty.value, personality)
+        prompt = _build_prompt(
+            question_text, answer_text, topic.value, difficulty.value, personality
+        )
         try:
             raw_text = await _call_gemini(prompt)
             data = _parse(raw_text)
